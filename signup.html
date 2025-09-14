@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap
+" rel="stylesheet">
+<style>
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f3f4f6; /* A softer grey background */
+}
+.brand-panel {
+background-color: #28a745;
+/* You can add a subtle pattern or image here */
+background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop');
+background-size: cover;
+background-position: center;
+}
+.btn-primary {
+background-color: #28a745;
+transition: background-color 0.3s ease;
+}
+.btn-primary:hover { background-color: #218838; }
+.input-field {
+background-color: #f9fafb;
+border-color: #d1d5db;
+transition: all 0.3s ease;
+}
+.input-field:focus {
+border-color: #28a745;
+box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+background-color: white;
+}
+.form-title {
+color: #1f2937;
+}
+</style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+<div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl flex
+overflow-hidden">
+<!-- Left Side: Brand Panel -->
+<div class="hidden md:flex md:w-1/2 brand-panel p-12 text-white flex-col
+justify-center">
+<h1 class="text-4xl font-bold mb-4">Join Our Community of Learners</h1>
+<p class="text-gray-200 leading-relaxed">
+By creating an account, you gain access to a world of resources, including your
+academic records, results, and important school updates. Let's begin your journey to
+success.
+</p>
+</div>
+<!-- Right Side: Form Panel -->
+<div class="w-full md:w-1/2 p-8 md:p-12">
+<div class="text-center md:text-left mb-8">
+<h2 class="form-title text-3xl font-bold">Create Your Account</h2>
+<p class="text-gray-500">Welcome! Please fill in your details.</p>
+</div>
+<form id="signupForm" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+<!-- Form Fields -->
+<div>
+<label for="firstName" class="block text-sm font-medium text-gray-600
+mb-1">First Name</label>
+<input type="text" id="firstName" required class="input-field w-full p-3
+rounded-lg text-sm">
+</div>
+<div>
+<label for="lastName" class="block text-sm font-medium text-gray-600
+mb-1">Last Name</label>
+<input type="text" id="lastName" required class="input-field w-full p-3
+rounded-lg text-sm">
+</div>
+<div>
+<label for="dateOfBirth" class="block text-sm font-medium text-gray-600
+mb-1">Date of Birth</label>
+<input type="date" id="dateOfBirth" required class="input-field w-full p-3
+rounded-lg text-sm text-gray-500">
+</div>
+<div>
+<label for="admissionNumber" class="block text-sm font-medium text-gray-600
+mb-1">Admission Number</label>
+<input type="text" id="admissionNumber" required class="input-field w-full p-3
+rounded-lg text-sm">
+</div>
+<div class="sm:col-span-2">
+<label for="studentClass" class="block text-sm font-medium text-gray-600
+mb-1">Class</label>
+<select id="studentClass" required class="input-field w-full p-3 rounded-lg
+text-sm bg-gray-50">
+<option value="">Select Your Current Class</option>
+<option value="JSS 1">JSS 1</option>
+<option value="JSS 2">JSS 2</option>
+<option value="JSS 3">JSS 3</option>
+<option value="SSS 1">SSS 1</option>
+<option value="SSS 2">SSS 2</option>
+<option value="SSS 3">SSS 3</option>
+</select>
+</div>
+<div class="sm:col-span-2">
+<label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email
+Address</label>
+<input type="email" id="email" required class="input-field w-full p-3 rounded-lg
+text-sm">
+</div>
+<div class="relative">
+    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+    <input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-10">
+    
+    <!-- ▼▼▼ THIS IS THE NEW TOGGLE BUTTON ▼▼▼ -->
+    <button type="button" id="passwordToggleBtn" class="absolute inset-y-0 right-0 top-6 flex items-center pr-3 text-gray-400 hover:text-gray-600" aria-label="Toggle password visibility">
+        <i data-lucide="eye" class="w-5 h-5"></i>
+    </button>
+    <!-- ▲▲▲ END OF NEW TOGGLE BUTTON ▲▲▲ -->
+</div><!-- Submission -->
+<div class="sm:col-span-2 mt-4">
+<button type="submit" id="submitBtn" class="btn-primary w-full text-white
+font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2">
+<span>Create Account</span>
+<div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent
+rounded-full animate-spin hidden"></div>
+</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+// --- GLOBAL SETUP ---
+const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co'; // <-- IMPORTANT: REPLACE
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// --- PASSWORD VISIBILITY TOGGLE ---
+const passwordInput = document.getElementById('password');
+const toggleBtn = document.getElementById('passwordToggleBtn');
+
+toggleBtn.addEventListener('click', () => {
+    // Check the current type of the input
+    const isPassword = passwordInput.type === 'password';
+    
+    // Change the input type
+    passwordInput.type = isPassword ? 'text' : 'password';
+    
+    // Find the icon inside the button
+    const toggleIcon = toggleBtn.querySelector('i');
+    
+    // Change the icon name for lucide
+    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+    
+    // Re-render the icons to show the change
+    lucide.createIcons();
+});
+
+// We also need to initialize lucide icons when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+});
+
+const submitBtn = document.getElementById('submitBtn');
+submitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    const spinner = document.getElementById('spinner');
+    submitBtn.disabled = true;
+    spinner.classList.remove('hidden');
+
+    // Collect all data from the form
+    const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        dateOfBirth: document.getElementById('dateOfBirth').value,
+        studentClass: document.getElementById('studentClass').value,
+        admissionNumber: document.getElementById('admissionNumber').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+    };
+    
+    // Check for empty fields
+    for (const key in formData) {
+        if (!formData[key]) {
+            Swal.fire({ icon: 'error', title: 'Incomplete Form', text: `Please fill out all fields to continue.`, confirmButtonColor: '#28a745' });
+            submitBtn.disabled = false;
+            spinner.classList.add('hidden');
+            return;
+        }
+    }
+
+    try {
+        // 1. SIGN UP THE USER (This part was already correct)
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password,
+            options: {
+                data: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    dateOfBirth: formData.dateOfBirth,
+                    studentClass: formData.studentClass,
+                    admissionNumber: formData.admissionNumber,
+                }
+            }
+        });
+
+        if (signUpError) throw signUpError;
+        
+        // =================================================================
+        // ▼▼▼ THIS IS THE NEW, CRITICAL STEP: A REAL LOGIN ▼▼▼
+        // =================================================================
+        // After a successful sign-up, we now perform a real sign-in.
+        // This creates the secure session that the dashboard page needs.
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+        });
+
+        if (signInError) {
+            // This could happen in rare cases, e.g., if email confirmation is required by your settings
+            throw new Error(`Sign-up succeeded, but login failed: ${signInError.message}`);
+        }
+        // =================================================================
+        // ▲▲▲ END OF THE NEW, CRITICAL STEP ▲▲▲
+        // =================================================================
+
+        
+        // On success, show a message and redirect to the dashboard
+        await Swal.fire({
+            icon: 'success',
+            title: 'Registration Successful!',
+            text: 'Your account has been created. You will now be taken to your dashboard.',
+            timer: 2000,
+            showConfirmButton: false,
+            allowOutsideClick: false
+        });
+
+        window.location.href = 'student-dashboard.html';
+
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: error.message,
+            confirmButtonColor: '#28a745'
+        });
+    } finally {
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+    }
+});
+</script>
+</body>
+</html>

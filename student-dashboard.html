@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body { background-color: #f0f4f8; }
+        .dashboard-header { background-color: #28a745; }
+        .info-card { background-color: white; }
+        .btn-secondary { background-color: #f8f9fa; border-color: #dee2e6; }
+        .btn-secondary:hover { background-color: #e2e6ea; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="dashboard-header text-white shadow-lg">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Student Portal</h1>
+            <button id="logoutBtn" class="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <!-- Welcome Banner -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 class="text-3xl font-bold">Welcome, <span id="studentName">Loading...</span>!</h2>
+            <p class="text-gray-500">Here is your academic dashboard.</p>
+        </div>
+
+        <!-- Main Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Profile Information Card -->
+            <div class="info-card p-6 rounded-xl shadow-md md:col-span-2">
+                <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-2">
+                    <i data-lucide="user-circle" class="w-6 h-6 text-green-600"></i>
+                    Student Information
+                </h3>
+                <div id="profileDetails" class="space-y-4">
+                    <!-- Details will be loaded here by JavaScript -->
+                    <p class="text-center text-gray-500 p-8">Loading profile data...</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="info-card p-6 rounded-xl shadow-md">
+                <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-6 h-6 text-green-600"></i>
+                    Quick Actions
+                </h3>
+                <div class="space-y-3">
+                    <a href="#" class="btn-secondary w-full text-left p-3 rounded-lg border flex items-center gap-3 transition">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                        <span>Check Results</span>
+                    </a>
+                    <a href="#" class="btn-secondary w-full text-left p-3 rounded-lg border flex items-center gap-3 transition">
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        <span>Pay School Fees</span>
+                    </a>
+                    <a href="#" class="btn-secondary w-full text-left p-3 rounded-lg border flex items-center gap-3 transition">
+                        <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                        <span>Upcoming Events</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script>
+// --- GLOBAL SETUP ---
+const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais'; // <-- IMPORTANT: REPLACE
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function loadDashboard() {
+    // 1. Check if the user is logged in
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+        // If not logged in, redirect to the sign-up page
+        window.location.href = 'signup.html';
+        return;
+    }
+    const user = session.user;
+
+    try {
+        // 2. Fetch the student's profile from the 'student_profiles' table
+        const { data: profile, error } = await supabase
+            .from('student_profiles')
+            .select('*') // Select all columns
+            .eq('id', user.id) // Find the profile that matches the logged-in user's ID
+            .single(); // We expect only one result
+
+        if (error) throw error;
+
+        // 3. Populate the page with the fetched data
+        document.getElementById('studentName').textContent = profile.first_name;
+        
+        const profileContainer = document.getElementById('profileDetails');
+        profileContainer.innerHTML = `
+            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                <strong class="text-gray-500">Full Name:</strong>
+                <span>${profile.first_name} ${profile.last_name}</span>
+                
+                <strong class="text-gray-500">Email:</strong>
+                <span>${user.email}</span>
+
+                <strong class="text-gray-500">Date of Birth:</strong>
+                <span>${new Date(profile.date_of_birth).toLocaleDateString()}</span>
+                
+                <strong class="text-gray-500">Class:</strong>
+                <span class="font-bold text-green-700">${profile.student_class}</span>
+                
+                <strong class="text-gray-500">Admission No:</strong>
+                <span>${profile.admission_number}</span>
+            </div>
+        `;
+
+    } catch (error) {
+        document.getElementById('profileDetails').innerHTML = `<p class="text-red-500">Error: Could not load profile. ${error.message}</p>`;
+    }
+
+    // Render all Lucide icons on the page
+    lucide.createIcons();
+}
+
+// Logout button functionality
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'student-signin.html';
+});
+
+// Load the dashboard as soon as the page is ready
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>
