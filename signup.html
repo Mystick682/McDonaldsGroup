@@ -110,18 +110,20 @@ Address</label>
 <input type="email" id="email" required class="input-field w-full p-3 rounded-lg
 text-sm">
 </div>
+<!-- ▼▼▼ THIS IS THE FINAL, CORRECTED PASSWORD BLOCK ▼▼▼ -->
 <div>
     <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
-    <!-- ▼▼▼ THIS IS THE NEW WRAPPER ▼▼▼ -->
-    <div class="relative flex items-center">
-        <input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-10">
-        
-        <button type="button" id="passwordToggleBtn" class="absolute right-0 flex items-center px-3 text-gray-400 hover:text-gray-600" aria-label="Toggle password visibility">
-            <i data-lucide="eye" class="w-5 h-5"></i>
-        </button>
+    <!-- We use a grid to layer the input and the button perfectly -->
+    <div class="relative">
+        <input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-12">
+        <div class="absolute inset-y-0 right-0 flex items-center">
+            <button type="button" id="passwordToggleBtn" class="p-3 text-gray-400 hover:text-gray-600" aria-label="Toggle password visibility">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+            </button>
+        </div>
     </div>
-    <!-- ▲▲▲ END OF WRAPPER ▲▲▲ -->
 </div>
+<!-- ▲▲▲ END OF THE FINAL PASSWORD BLOCK ▲▲▲ -->
     
     <!-- Submission -->
 <div class="sm:col-span-2 mt-4">
@@ -267,6 +269,7 @@ submitBtn.addEventListener('click', async (e) => {
 </body>
 
 </html>
+
 
 
 
