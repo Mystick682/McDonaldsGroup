@@ -146,34 +146,8 @@ Have an account?
 <script>
 // --- GLOBAL SETUP ---
 const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co'; // <-- IMPORTANT: REPLACE
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais'; // <-- IMPORTANT: REPLACE
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// --- PASSWORD VISIBILITY TOGGLE ---
-const passwordInput = document.getElementById('password');
-const toggleBtn = document.getElementById('passwordToggleBtn');
-
-toggleBtn.addEventListener('click', () => {
-    // Check the current type of the input
-    const isPassword = passwordInput.type === 'password';
-    
-    // Change the input type
-    passwordInput.type = isPassword ? 'text' : 'password';
-    
-    // Find the icon inside the button
-    const toggleIcon = toggleBtn.querySelector('i');
-    
-    // Change the icon name for lucide
-    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
-    
-    // Re-render the icons to show the change
-    lucide.createIcons();
-});
-
-// We also need to initialize lucide icons when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-});
 
 const submitBtn = document.getElementById('submitBtn');
 submitBtn.addEventListener('click', async (e) => {
@@ -183,7 +157,6 @@ submitBtn.addEventListener('click', async (e) => {
     submitBtn.disabled = true;
     spinner.classList.remove('hidden');
 
-    // Collect all data from the form
     const formData = {
         firstName: document.getElementById('firstName').value,
         lastName: document.getElementById('lastName').value,
@@ -194,10 +167,9 @@ submitBtn.addEventListener('click', async (e) => {
         password: document.getElementById('password').value,
     };
     
-    // Check for empty fields
     for (const key in formData) {
         if (!formData[key]) {
-            Swal.fire({ icon: 'error', title: 'Incomplete Form', text: `Please fill out all fields to continue.`, confirmButtonColor: '#28a745' });
+            Swal.fire({ icon: 'error', title: 'Incomplete Form', text: `Please fill out all fields.`, confirmButtonColor: '#28a745' });
             submitBtn.disabled = false;
             spinner.classList.add('hidden');
             return;
@@ -205,11 +177,14 @@ submitBtn.addEventListener('click', async (e) => {
     }
 
     try {
-        // 1. SIGN UP THE USER (This part was already correct)
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        // --- THIS IS THE KEY CHANGE ---
+        // We go back to the simple, direct, and correct way of signing up.
+        // This method automatically sends a confirmation email.
+        const { data, error } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
             options: {
+                // The data here is automatically passed to our new database trigger.
                 data: {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
@@ -220,38 +195,18 @@ submitBtn.addEventListener('click', async (e) => {
             }
         });
 
-        if (signUpError) throw signUpError;
+        if (error) throw error;
         
-        // =================================================================
-        // ▼▼▼ THIS IS THE NEW, CRITICAL STEP: A REAL LOGIN ▼▼▼
-        // =================================================================
-        // After a successful sign-up, we now perform a real sign-in.
-        // This creates the secure session that the dashboard page needs.
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-        });
-
-        if (signInError) {
-            // This could happen in rare cases, e.g., if email confirmation is required by your settings
-            throw new Error(`Sign-up succeeded, but login failed: ${signInError.message}`);
-        }
-        // =================================================================
-        // ▲▲▲ END OF THE NEW, CRITICAL STEP ▲▲▲
-        // =================================================================
-
-        
-        // On success, show a message and redirect to the dashboard
+        // On success, show a confirmation message.
         await Swal.fire({
             icon: 'success',
-            title: 'Registration Successful!',
-            text: 'Your account has been created. You will now be taken to your dashboard.',
-            timer: 2000,
-            showConfirmButton: false,
-            allowOutsideClick: false
+            title: 'Registration Submitted!',
+            text: 'Your account has been created. Please check your email to confirm your registration.',
+            confirmButtonColor: '#28a745'
         });
 
-        window.location.href = 'student-dashboard.html';
+        // Optional: Redirect to a "check your email" page or the sign-in page.
+        window.location.href = 'student-signin.html';
 
     } catch (error) {
         Swal.fire({
@@ -266,9 +221,11 @@ submitBtn.addEventListener('click', async (e) => {
     }
 });
 </script>
+    
 </body>
 
 </html>
+
 
 
 
