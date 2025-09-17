@@ -50,8 +50,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
-    const signupForm = document.getElementById('signupForm');
-    signupForm.addEventListener('submit', handleSignUp);
+    document.getElementById('signupForm').addEventListener('submit', handleSignUp);
     document.getElementById('passwordToggleBtn').addEventListener('click', togglePasswordVisibility);
 });
 
@@ -70,14 +69,14 @@ async function handleSignUp(e) {
     };
     
     try {
-        const { data, error } = await supabase.auth.signUp({
-            email: formData.email, password: formData.password,
-            options: { data: {
-                firstName: formData.firstName, lastName: formData.lastName, dateOfBirth: formData.dateOfBirth,
-                studentClass: formData.studentClass, admissionNumber: formData.admissionNumber,
-            }}
+        // --- THIS IS THE KEY CHANGE ---
+        // We now call our custom and reliable Edge Function.
+        const { data, error } = await supabase.functions.invoke('create-student-account', {
+            body: formData,
         });
+
         if (error) throw error;
+        if (data.error) throw new Error(data.error);
         
         await Swal.fire({
             icon: 'success', title: 'Registration Submitted!',
@@ -85,6 +84,7 @@ async function handleSignUp(e) {
             confirmButtonColor: '#28a745'
         });
         window.location.href = 'student-signin.html';
+
     } catch (error) {
         Swal.fire({ icon: 'error', title: 'Registration Failed', text: error.message, confirmButtonColor: '#28a745' });
     } finally {
