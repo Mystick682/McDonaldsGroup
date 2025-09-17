@@ -26,8 +26,9 @@
             <p class="text-gray-200 leading-relaxed">Create your account to access your academic records, results, and important school updates.</p>
         </div>
         <div class="w-full md:w-1/2 p-8 md:p-12">
-            <div class="text-center md:text-left mb-8"><h2 class="text-3xl font-bold text-gray-800">Student Registration</h2><p class="text-gray-500">Welcome! Please fill in your details.</p></div>
-            <form id="signupForm" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div class="text-center md:text-left mb-8"><h2 class="text-3xl font-bold text-gray-800">Student Registrations</h2><p class="text-gray-500">Welcome! Please fill in your details.</p></div>
+            <!-- The form no longer needs an ID -->
+            <form class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div><label for="firstName" class="block text-sm font-medium text-gray-600 mb-1">First Name</label><input type="text" id="firstName" required class="input-field w-full p-3 rounded-lg text-sm"></div>
                 <div><label for="lastName" class="block text-sm font-medium text-gray-600 mb-1">Last Name</label><input type="text" id="lastName" required class="input-field w-full p-3 rounded-lg text-sm"></div>
                 <div><label for="dateOfBirth" class="block text-sm font-medium text-gray-600 mb-1">Date of Birth</label><input type="date" id="dateOfBirth" required class="input-field w-full p-3 rounded-lg text-sm text-gray-500"></div>
@@ -38,7 +39,14 @@
                     <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
                     <div class="relative"><input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-12"><div class="absolute inset-y-0 right-0 flex items-center"><button type="button" id="passwordToggleBtn" class="p-3 text-gray-400 hover:text-gray-600"><i data-lucide="eye" class="w-5 h-5"></i></button></div></div>
                 </div>
-                <div class="sm:col-span-2 mt-4"><button type="submit" id="submitBtn" class="btn-primary w-full text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"><span>Create Account</span><div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div></button></div>
+                <div class="sm:col-span-2 mt-4">
+                    <!-- ▼▼▼ THIS IS THE CRITICAL FIX ▼▼▼ -->
+                    <button type="button" id="submitBtn" class="btn-primary w-full text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2">
+                        <span>Create Account</span>
+                        <div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
+                    </button>
+                    <!-- ▲▲▲ END OF FIX ▲▲▲ -->
+                </div>
             </form>
         </div>
     </div>
@@ -50,7 +58,10 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
-    document.getElementById('signupForm').addEventListener('submit', handleSignUp);
+    // ▼▼▼ THIS IS THE CRITICAL FIX ▼▼▼
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.addEventListener('click', handleSignUp);
+    // ▲▲▲ END OF FIX ▲▲▲
     document.getElementById('passwordToggleBtn').addEventListener('click', togglePasswordVisibility);
 });
 
@@ -69,21 +80,23 @@ async function handleSignUp(e) {
     };
     
     try {
-        // --- THIS IS THE KEY CHANGE ---
-        // We now call our custom and reliable Edge Function.
         const { data, error } = await supabase.functions.invoke('create-student-account', {
             body: formData,
         });
-
-        if (error) throw error;
-        if (data.error) throw new Error(data.error);
+        if (error || data.error) throw error || new Error(data.error);
+        
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+        });
+        if (signInError) throw new Error(`Account created, but auto-login failed: ${signInError.message}`);
         
         await Swal.fire({
-            icon: 'success', title: 'Registration Submitted!',
-            text: 'Please check your email to confirm your account.',
-            confirmButtonColor: '#28a745'
+            icon: 'success', title: 'Registration Successful!',
+            text: 'Your account has been created. Redirecting to your dashboard...',
+            timer: 2000, showConfirmButton: false, allowOutsideClick: false
         });
-        window.location.href = 'student-signin.html';
+        window.location.href = 'student-dashboard.html';
 
     } catch (error) {
         Swal.fire({ icon: 'error', title: 'Registration Failed', text: error.message, confirmButtonColor: '#28a745' });
@@ -103,4 +116,4 @@ function togglePasswordVisibility() {
 }
 </script>
 </body>
-</html>
+    </html>
