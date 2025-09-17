@@ -7,131 +7,52 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .brand-panel {
-            background-color: #28a745;
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-        }
-        .btn-primary { 
-            background-color: #28a745; 
-            transition: background-color 0.3s ease;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .brand-panel { background-color: #28a745; background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center; }
+        .btn-primary { background-color: #28a745; transition: background-color 0.3s ease; }
         .btn-primary:hover { background-color: #218838; }
-        .input-field { 
-            background-color: #f9fafb;
-            border-color: #d1d5db; 
-            transition: all 0.3s ease;
-        }
-        .input-field:focus { 
-            border-color: #28a745; 
-            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25); 
-            background-color: white;
-        }
-        .form-title {
-            color: #1f2937;
-        }
+        .input-field { background-color: #f9fafb; border-color: #d1d5db; transition: all 0.3s ease; }
+        .input-field:focus { border-color: #28a745; box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25); background-color: white; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
     <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl flex overflow-hidden">
-        
-        <!-- Left Side: Brand Panel -->
         <div class="hidden md:flex md:w-1/2 brand-panel p-12 text-white flex-col justify-center">
             <h1 class="text-4xl font-bold mb-4">Welcome Back!</h1>
-            <p class="text-gray-200 leading-relaxed">
-                Sign in to access your student dashboard, view your academic progress, check results, and stay updated with the latest school events.
-            </p>
+            <p class="text-gray-200 leading-relaxed">Sign in to access your student dashboard, view academic progress, and stay updated with school events.</p>
         </div>
-
-        <!-- Right Side: Form Panel -->
         <div class="w-full md:w-1/2 p-8 md:p-12">
-            <div class="text-center md:text-left mb-8">
-                <h2 class="form-title text-3xl font-bold">Student Portal Sign In</h2>
-                <p class="text-gray-500">Enter your credentials to continue.</p>
-            </div>
-            
+            <div class="text-center md:text-left mb-8"><h2 class="text-3xl font-bold text-gray-800">Student Portal Sign In</h2><p class="text-gray-500">Enter your credentials to continue.</p></div>
             <form id="signInForm" class="space-y-6">
-                <!-- Email Field -->
+                <div><label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email Address</label><input type="email" id="email" required class="input-field w-full p-3 rounded-lg text-sm"></div>
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email Address</label>
-                    <input type="email" id="email" required class="input-field w-full p-3 rounded-lg text-sm">
-                </div>
-
-                <!-- Password Field -->
-               <div class="relative">
                     <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
-                    <input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-10">
-    
-                    <!-- ▼▼▼ THIS IS THE NEW TOGGLE BUTTON ▼▼▼ -->
-                     <button type="button" id="passwordToggleBtn" class="absolute inset-y-0 right-0 top-6 flex items-center pr-3 text-gray-400 hover:text-gray-600" aria-label="Toggle password visibility">
-                        <i data-lucide="eye" class="w-5 h-5"></i>
-                    </button>
-                        <!-- ▲▲▲ END OF NEW TOGGLE BUTTON ▲▲▲ -->
+                    <div class="relative"><input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-12"><div class="absolute inset-y-0 right-0 flex items-center"><button type="button" id="passwordToggleBtn" class="p-3 text-gray-400 hover:text-gray-600"><i data-lucide="eye" class="w-5 h-5"></i></button></div></div>
                 </div>
-                
-                <!-- Submission -->
-                <div class="pt-4">
-                    <button type="submit" id="submitBtn" class="btn-primary w-full text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2">
-                        <span>Sign In</span>
-                        <div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
-                    </button>
-                </div>
-
-                <div class="text-center text-sm">
-                    <p class="text-gray-500">
-                        Don't have an account? 
-                        <a href="signup.html" class="font-medium text-green-600 hover:text-green-500">Register here</a>
-                    </p>
-                </div>
+                <div class="pt-4"><button type="submit" id="submitBtn" class="btn-primary w-full text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"><span>Sign In</span><div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div></button></div>
+                <div class="text-center text-sm"><p class="text-gray-500">Don't have an account? <a href="student-signup.html" class="font-medium text-green-600 hover:text-green-500">Register here</a></p></div>
             </form>
         </div>
     </div>
 
 <script>
-// --- GLOBAL SETUP ---
-const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co'; // <-- IMPORTANT: REPLACE
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais';
+const SUPABASE_URL = 'https://ldvildvshmhzgyoqbtmb.supabase.co'; // <-- IMPORTANT: REPLACE
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkdmlsZHZzaG1oemd5b3FidG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNzAyNjgsImV4cCI6MjA3MzY0NjI2OH0.74zSvaRZWLG5bZcp3p_pzUjNJq8KAyYDuGiOlDz9IoQ'; // <-- IMPORTANT: REPLACE
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- PASSWORD VISIBILITY TOGGLE ---
-const passwordInput = document.getElementById('password');
-const toggleBtn = document.getElementById('passwordToggleBtn');
-
-toggleBtn.addEventListener('click', () => {
-    // Check the current type of the input
-    const isPassword = passwordInput.type === 'password';
-    
-    // Change the input type
-    passwordInput.type = isPassword ? 'text' : 'password';
-    
-    // Find the icon inside the button
-    const toggleIcon = toggleBtn.querySelector('i');
-    
-    // Change the icon name for lucide
-    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
-    
-    // Re-render the icons to show the change
-    lucide.createIcons();
-});
-
-// We also need to initialize lucide icons when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
+    document.getElementById('signInForm').addEventListener('submit', handleSignIn);
+    document.getElementById('passwordToggleBtn').addEventListener('click', togglePasswordVisibility);
 });
 
-const signInForm = document.getElementById('signInForm');
-signInForm.addEventListener('submit', async (e) => {
+async function handleSignIn(e) {
     e.preventDefault();
-    
     const submitBtn = document.getElementById('submitBtn');
     const spinner = document.getElementById('spinner');
     submitBtn.disabled = true;
@@ -141,61 +62,30 @@ signInForm.addEventListener('submit', async (e) => {
     const password = document.getElementById('password').value;
 
     try {
-        // Use Supabase to sign in the user with their email and password
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            // If Supabase returns an error, it's almost always "Invalid login credentials"
-            throw new Error("Invalid login credentials. Please check your email and password.");
-        }
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error("Invalid login credentials. Please check your email and password.");
         
-        // If login is successful, we now need to fetch the student's first name
-        // to personalize the experience. We do this by querying the 'student_profiles' table.
-        const { data: profile, error: profileError } = await supabase
-            .from('student_profiles')
-            .select('first_name, last_name')
-            .eq('id', data.user.id)
-            .single();
-
-        if (profileError) {
-            // This is a rare edge case where a user exists in auth but not in profiles
-            console.error("Login successful but profile not found:", profileError);
-        }
-
-        // We will store the user data in localStorage so the dashboard can use it.
-        // This is a simple way to pass data between pages.
-        localStorage.setItem("userData", JSON.stringify({
-            firstName: profile?.first_name || '',
-            lastName: profile?.last_name || ''
-        }));
-        
-        // Show a success message
         await Swal.fire({
-            icon: 'success',
-            title: 'Sign In Successful!',
-            text: `Welcome back, ${profile?.first_name || 'Student'}!`,
-            timer: 1500,
-            showConfirmButton: false,
+            icon: 'success', title: 'Sign In Successful!',
+            text: `Welcome back!`, timer: 1500, showConfirmButton: false,
         });
-
-        // Redirect to the dashboard
         window.location.href = 'student-dashboard.html';
-
     } catch (error) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Sign In Failed',
-            text: error.message,
-            confirmButtonColor: '#28a745'
-        });
+        Swal.fire({ icon: 'error', title: 'Sign In Failed', text: error.message, confirmButtonColor: '#28a745' });
     } finally {
         submitBtn.disabled = false;
         spinner.classList.add('hidden');
     }
-});
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.querySelector('#passwordToggleBtn i');
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+    lucide.createIcons();
+}
 </script>
 </body>
 </html>
