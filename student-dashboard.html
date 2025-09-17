@@ -7,12 +7,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f0f4f8; }
-        .dashboard-header { background-color: #28a745; }
-        .info-card { background-color: white; }
-        .btn-secondary { background-color: #f8f9fa; border-color: #dee2e6; }
-        .btn-secondary:hover { background-color: #e2e6ea; }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .dashboard-header { 
+            background-color: #28a745; 
+        }
+        .info-card { 
+            background-color: white; 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .progress-bar-bg { background-color: #e9ecef; }
+        .progress-bar { background-color: #28a745; transition: width 0.5s ease-in-out; }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-paid { background-color: #d1fae5; color: #065f46; }
+        .status-due { background-color: #fee2e2; color: #991b1b; }
+        .status-partial { background-color: #fef3c7; color: #92400e; }
+        .btn-primary { background-color: #28a745; transition: background-color 0.3s; }
+        .btn-primary:hover { background-color: #218838; }
+        .transaction-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -20,53 +43,59 @@
     <header class="dashboard-header text-white shadow-lg">
         <div class="container mx-auto p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold">Student Portal</h1>
-            <button id="logoutBtn" class="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                <i data-lucide="log-out" class="w-5 h-5"></i>
-                <span>Logout</span>
-            </button>
+            <div class="flex items-center gap-4">
+                <div id="userAvatar" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">?</div>
+                <button id="logoutBtn" class="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span class="hidden md:inline">Logout</span>
+                </button>
+            </div>
         </div>
     </header>
 
     <main class="container mx-auto p-4 md:p-8">
         <!-- Welcome Banner -->
-        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
-            <h2 class="text-3xl font-bold">Welcome, <span id="studentName">Loading...</span>!</h2>
-            <p class="text-gray-500">Here is your academic dashboard.</p>
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">Welcome, <span id="studentName" class="text-green-600">Student</span>!</h2>
+                <p class="text-gray-500 mt-1">Here is a summary of your academic and financial status.</p>
+            </div>
+            <!-- ▼▼▼ NEW "PAY FEES" BUTTON ▼▼▼ -->
+            <a href="pay-fees.html" id="payFeesBtn" class="btn-primary text-white font-semibold py-3 px-5 rounded-lg flex items-center gap-2 w-full sm:w-auto">
+                <i data-lucide="banknote" class="w-5 h-5"></i>
+                <span>Pay School Fees</span>
+            </a>
         </div>
 
         <!-- Main Info Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Profile Information Card -->
-            <div class="info-card p-6 rounded-xl shadow-md md:col-span-2">
-                <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-2">
-                    <i data-lucide="user-circle" class="w-6 h-6 text-green-600"></i>
-                    Student Information
-                </h3>
-                <div id="profileDetails" class="space-y-4">
-                    <!-- Details will be loaded here by JavaScript -->
-                    <p class="text-center text-gray-500 p-8">Loading profile data...</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Profile & Fees -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Profile Information Card -->
+                <div class="info-card p-6 rounded-xl">
+                    <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-3 text-gray-700"><i data-lucide="user-circle" class="w-6 h-6 text-green-600"></i>Student Profile</h3>
+                    <div id="profileDetails" class="space-y-4"><p class="text-center text-gray-500 p-8">Loading profile data...</p></div>
+                </div>
+
+                <!-- School Fees Card -->
+                <div class="info-card p-6 rounded-xl">
+                    <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-3 text-gray-700"><i data-lucide="banknote" class="w-6 h-6 text-green-600"></i>School Fees Status</h3>
+                    <div id="feesDetails" class="space-y-4"><p class="text-center text-gray-500 p-8">Loading fees data...</p></div>
                 </div>
             </div>
 
-            <!-- Quick Actions Card -->
-            <div class="info-card p-6 rounded-xl shadow-md">
-                <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-2">
-                    <i data-lucide="layout-grid" class="w-6 h-6 text-green-600"></i>
-                    Quick Actions
-                </h3>
-                <div class="space-y-3">
-                    <a href="#" class="btn-secondary w-full text-left p-3 rounded-lg border flex items-center gap-3 transition">
-                        <i data-lucide="file-text" class="w-5 h-5"></i>
-                        <span>Check Results</span>
-                    </a>
-                    <a href="#" class="btn-secondary w-full text-left p-3 rounded-lg border flex items-center gap-3 transition">
-                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-                        <span>Pay School Fees</span>
-                    </a>
-                    <a href="#" class="btn-secondary w-full text-left p-3 rounded-lg border flex items-center gap-3 transition">
-                        <i data-lucide="calendar-days" class="w-5 h-5"></i>
-                        <span>Upcoming Events</span>
-                    </a>
+            <!-- Right Column: Transaction History -->
+            <div class="lg:col-span-1">
+                <div class="info-card p-6 rounded-xl">
+                    <h3 class="text-xl font-bold border-b pb-3 mb-4 flex items-center gap-3 text-gray-700">
+                        <i data-lucide="history" class="w-6 h-6 text-green-600"></i>
+                        Recent Transactions
+                    </h3>
+                    <div id="transactionList" class="space-y-3">
+                        <!-- Transactions will be loaded here -->
+                        <p class="text-center text-gray-500 p-8">Loading transactions...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -74,68 +103,139 @@
 
 <script>
 // --- GLOBAL SETUP ---
-const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais'; // <-- IMPORTANT: REPLACE
+const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // <-- IMPORTANT: REPLACE
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // <-- IMPORTANT: REPLACE
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const formatCurrency = (amount) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+
 async function loadDashboard() {
-    // 1. Check if the user is logged in
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !session) {
-        // If not logged in, redirect to the sign-up page
-        window.location.href = 'signup.html';
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = 'student-signin.html';
         return;
     }
     const user = session.user;
 
     try {
-        // 2. Fetch the student's profile from the 'student_profiles' table
-        const { data: profile, error } = await supabase
-            .from('student_profiles')
-            .select('*') // Select all columns
-            .eq('id', user.id) // Find the profile that matches the logged-in user's ID
-            .single(); // We expect only one result
-
-        if (error) throw error;
-
-        // 3. Populate the page with the fetched data
-        document.getElementById('studentName').textContent = profile.first_name;
+        // --- 1. FETCH PROFILE & FEES ---
+        const { data: profile, error: profileError } = await supabase
+            .rpc('get_student_financials', { student_id: user.id })
+            .single();
+        if (profileError) throw profileError;
+        renderProfile(profile, user.email);
+        renderFees(profile);
         
-        const profileContainer = document.getElementById('profileDetails');
-        profileContainer.innerHTML = `
-            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-                <strong class="text-gray-500">Full Name:</strong>
-                <span>${profile.first_name} ${profile.last_name}</span>
-                
-                <strong class="text-gray-500">Email:</strong>
-                <span>${user.email}</span>
-
-                <strong class="text-gray-500">Date of Birth:</strong>
-                <span>${new Date(profile.date_of_birth).toLocaleDateString()}</span>
-                
-                <strong class="text-gray-500">Class:</strong>
-                <span class="font-bold text-green-700">${profile.student_class}</span>
-                
-                <strong class="text-gray-500">Admission No:</strong>
-                <span>${profile.admission_number}</span>
-            </div>
-        `;
+        // --- 2. FETCH TRANSACTION HISTORY ---
+        const { data: transactions, error: transError } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false }) // Get the newest first
+            .limit(5); // Only get the last 5 transactions
+        if (transError) throw transError;
+        renderTransactions(transactions);
 
     } catch (error) {
-        document.getElementById('profileDetails').innerHTML = `<p class="text-red-500">Error: Could not load profile. ${error.message}</p>`;
+        // Display a global error message if anything fails
+        const mainContent = document.querySelector('main');
+        mainContent.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+            <strong class="font-bold">Loading Failed!</strong>
+            <span class="block sm:inline">${error.message}</span>
+        </div>`;
+    } finally {
+        lucide.createIcons();
     }
-
-    // Render all Lucide icons on the page
-    lucide.createIcons();
 }
 
-// Logout button functionality
+function renderProfile(profile, email) {
+    document.getElementById('studentName').textContent = profile.first_name;
+    const initials = (profile.first_name?.charAt(0) || '') + (profile.last_name?.charAt(0) || '');
+    document.getElementById('userAvatar').textContent = initials.toUpperCase() || '?';
+    
+    const profileContainer = document.getElementById('profileDetails');
+    profileContainer.innerHTML = `
+        <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <strong class="text-gray-500">Full Name:</strong><span class="font-semibold">${profile.first_name} ${profile.last_name}</span>
+            <strong class="text-gray-500">Email:</strong><span class="font-semibold">${email}</span>
+            <strong class="text-gray-500">Date of Birth:</strong><span class="font-semibold">${new Date(profile.date_of_birth).toLocaleDateString('en-GB')}</span>
+            <strong class="text-gray-500">Class:</strong><span class="font-bold text-green-700">${profile.student_class}</span>
+            <strong class="text-gray-500">Admission No:</strong><span class="font-semibold">${profile.admission_number}</span>
+        </div>
+    `;
+}
+
+function renderFees(profile) {
+    const feesContainer = document.getElementById('feesDetails');
+    const feesPaid = parseFloat(profile.fees_paid);
+    const totalFees = parseFloat(profile.total_fees_due);
+    const balance = parseFloat(profile.balance_due);
+    const percentagePaid = totalFees > 0 ? (feesPaid / totalFees) * 100 : 100;
+    
+    let statusBadge, statusText;
+    if (balance <= 0) {
+        statusBadge = '<span class="status-badge status-paid">Paid in Full</span>';
+        statusText = 'Thank you for completing your payment.';
+        document.getElementById('payFeesBtn').classList.add('hidden'); // Hide pay button if paid
+    } else if (feesPaid > 0) {
+        statusBadge = '<span class="status-badge status-partial">Partially Paid</span>';
+        statusText = 'Please complete your payment soon.';
+    } else {
+        statusBadge = '<span class="status-badge status-due">Payment Due</span>';
+        statusText = 'No payment has been received yet.';
+    }
+    
+    feesContainer.innerHTML = `
+        <div class="flex justify-between items-center"><h4 class="font-semibold">Payment Status</h4>${statusBadge}</div>
+        <div class="mt-4">
+            <div class="progress-bar-bg w-full h-3 rounded-full overflow-hidden"><div class="progress-bar h-full rounded-full" style="width: ${percentagePaid}%"></div></div>
+            <div class="flex justify-between text-xs text-gray-500 mt-1"><span>Paid: ${formatCurrency(feesPaid)}</span><span>Total: ${formatCurrency(totalFees)}</span></div>
+        </div>
+        <div class="mt-6 border-t pt-4 space-y-3">
+            <div class="flex justify-between"><span class="text-gray-500">Total Fees Due:</span><span class="font-semibold">${formatCurrency(totalFees)}</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Total Paid:</span><span class="font-semibold text-green-600">${formatCurrency(feesPaid)}</span></div>
+            <div class="flex justify-between text-lg font-bold"><span>Balance Due:</span><span class="${balance <= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(balance > 0 ? balance : 0)}</span></div>
+        </div>
+        <p class="text-xs text-center text-gray-400 mt-4">${statusText}</p>
+    `;
+}
+
+function renderTransactions(transactions) {
+    const transList = document.getElementById('transactionList');
+    if (transactions.length === 0) {
+        transList.innerHTML = `<p class="text-center text-gray-500 p-8">You have no recent transactions.</p>`;
+        return;
+    }
+
+    transList.innerHTML = transactions.map(tx => {
+        const isCredit = tx.service_type === 'fee_payment';
+        const icon = isCredit ? 'arrow-down-circle' : 'arrow-up-circle';
+        const color = isCredit ? 'text-green-500' : 'text-red-500';
+        const sign = isCredit ? '+' : '-';
+        
+        // We will assume a default description if it's a fee payment
+        const description = tx.description || 'School Fees Payment';
+        
+        return `
+            <div class="transaction-item flex items-center justify-between py-3 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="${icon}" class="w-5 h-5 ${color}"></i>
+                    <div>
+                        <p class="font-semibold text-sm">${description}</p>
+                        <p class="text-xs text-gray-400">${new Date(tx.created_at).toLocaleDateString('en-GB')}</p>
+                    </div>
+                </div>
+                <div class="font-bold text-sm ${color}">${sign} ${formatCurrency(tx.amount)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     await supabase.auth.signOut();
     window.location.href = 'student-signin.html';
 });
 
-// Load the dashboard as soon as the page is ready
 document.addEventListener('DOMContentLoaded', loadDashboard);
 </script>
 </body>
