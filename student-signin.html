@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Sign In Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .brand-panel { background-color: #28a745; background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center; }
+        .btn-primary { background-color: #28a745; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #218838; }
+        .input-field { background-color: #f9fafb; border-color: #d1d5db; transition: all 0.3s ease; }
+        .input-field:focus { border-color: #28a745; box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25); background-color: white; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl flex overflow-hidden">
+        <div class="hidden md:flex md:w-1/2 brand-panel p-12 text-white flex-col justify-center">
+            <h1 class="text-4xl font-bold mb-4">Welcome Back!</h1>
+            <p class="text-gray-200 leading-relaxed">Sign in to access your student dashboard, view academic progress, and stay updated with school events.</p>
+        </div>
+        <div class="w-full md:w-1/2 p-8 md:p-12">
+            <div class="text-center md:text-left mb-8"><h2 class="text-3xl font-bold text-gray-800">Student Portal Sign In</h2><p class="text-gray-500">Enter your credentials to continue.</p></div>
+            <form id="signInForm" class="space-y-6">
+                <div><label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email Address</label><input type="email" id="email" required class="input-field w-full p-3 rounded-lg text-sm"></div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+                    <div class="relative"><input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-12"><div class="absolute inset-y-0 right-0 flex items-center"><button type="button" id="passwordToggleBtn" class="p-3 text-gray-400 hover:text-gray-600"><i data-lucide="eye" class="w-5 h-5"></i></button></div></div>
+                </div>
+                <div class="pt-4"><button type="submit" id="submitBtn" class="btn-primary w-full text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"><span>Sign In</span><div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div></button></div>
+                <div class="text-center text-sm"><p class="text-gray-500">Don't have an account? <a href="student-signup.html" class="font-medium text-green-600 hover:text-green-500">Register here</a></p></div>
+            </form>
+        </div>
+    </div>
+
+<script>
+const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    document.getElementById('signInForm').addEventListener('submit', handleSignIn);
+    document.getElementById('passwordToggleBtn').addEventListener('click', togglePasswordVisibility);
+});
+
+async function handleSignIn(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    submitBtn.disabled = true;
+    spinner.classList.remove('hidden');
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error("Invalid login credentials. Please check your email and password.");
+        
+        window.location.href = 'student-dashboard.html';
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Sign In Failed', text: error.message, confirmButtonColor: '#28a745' });
+    } finally {
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+    }
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.querySelector('#passwordToggleBtn i');
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+    lucide.createIcons();
+}
+</script>
+</body>
+</html>

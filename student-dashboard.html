@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .dashboard-header { background-color: #28a745; }
+        .info-card { background-color: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #28a745; border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-paid { background-color: #d1fae5; color: #065f46; }
+        .status-due { background-color: #fee2e2; color: #991b1b; }
+        .status-partial { background-color: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body class="text-gray-900">
+    <header class="dashboard-header text-white sticky top-0 z-10"><div class="max-w-4xl mx-auto p-4 flex justify-between items-center"><h1 class="text-xl font-bold">Student Portal</h1><div class="flex items-center gap-3"><button id="logoutBtn" class="p-2 rounded-full hover:bg-white/10 transition"><i data-lucide="log-out" class="w-6 h-6"></i></button></div></div></header>
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="info-card p-6"><h2 class="text-3xl font-bold">Welcome, <span id="studentName" class="text-green-600">Student</span>!</h2><p class="text-gray-500 mt-1">This is your personal academic dashboard.</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a href="pay-fees.html" class="info-card p-6 text-center hover:bg-green-50 transition"><i data-lucide="banknote" class="w-10 h-10 mx-auto text-green-600 mb-2"></i><h3 class="font-bold text-lg">Pay School Fees</h3><p class="text-sm text-gray-500">Settle your outstanding balance.</p></a>
+            <a href="check-results.html" class="info-card p-6 text-center hover:bg-green-50 transition"><i data-lucide="file-text" class="w-10 h-10 mx-auto text-green-600 mb-2"></i><h3 class="font-bold text-lg">Check Results</h3><p class="text-sm text-gray-500">View your academic performance.</p></a>
+        </div>
+        <div class="info-card p-6"><h3 class="text-xl font-bold border-b border-gray-200 pb-3 mb-4">Student Profile</h3><div id="profileDetails" class="space-y-4"><div class="flex items-center justify-center py-8"><div class="loader"></div></div><p class="text-center text-gray-500">Loading profile data...</p></div></div>
+        <div class="info-card p-6"><h3 class="text-xl font-bold border-b border-gray-200 pb-3 mb-4">School Fees Status</h3><div id="feesDetails" class="space-y-4"><div class="flex items-center justify-center py-8"><div class="loader"></div></div><p class="text-center text-gray-500">Loading fees data...</p></div></div>
+        <div class="info-card p-6"><h3 class="text-xl font-bold border-b border-gray-200 pb-3 mb-4">Recent Transactions</h3><div id="transactionList" class="space-y-3"><div class="flex items-center justify-center py-8"><div class="loader"></div></div><p class="text-center text-gray-500">Loading transactions...</p></div></div>
+    </main>
+
+<script>
+const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const formatCurrency = (amount) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+
+async function loadDashboard() {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = 'student-signin.html'; return; }
+        const user = session.user;
+
+        const { data: profile, error: profileError } = await supabase.rpc('get_student_financials', { student_id: user.id }).single();
+        if (profileError) throw new Error("Could not find a student profile linked to your account. Please sign up again or contact administration.");
+        
+        renderProfile(profile, user.email);
+        renderFees(profile);
+        
+        const { data: transactions, error: transError } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5);
+        if (transError) throw transError;
+        renderTransactions(transactions);
+
+    } catch (error) {
+        const mainContent = document.querySelector('main');
+        mainContent.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg m-4" role="alert"><strong class="font-bold">Dashboard Error!</strong><span class="block sm:inline">${error.message}</span></div>`;
+    } finally {
+        lucide.createIcons();
+    }
+}
+
+function renderProfile(profile, email) {
+    document.getElementById('studentName').textContent = profile.first_name;
+    const profileContainer = document.getElementById('profileDetails');
+    profileContainer.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm"><div class="font-medium text-gray-500">Full Name:</div><div class="font-semibold">${profile.first_name} ${profile.last_name}</div><div class="font-medium text-gray-500">Email:</div><div class="font-semibold">${email}</div><div class="font-medium text-gray-500">Class:</div><div class="font-bold text-green-700">${profile.student_class}</div><div class="font-medium text-gray-500">Admission No:</div><div class="font-semibold">${profile.admission_number || 'N/A'}</div></div>`;
+}
+function renderFees(profile) {
+    const feesContainer = document.getElementById('feesDetails');
+    const feesPaid = parseFloat(profile.fees_paid);
+    const totalFees = parseFloat(profile.total_fees_due) || 0;
+    const balance = parseFloat(profile.balance_due) || 0;
+    const percentagePaid = totalFees > 0 ? (feesPaid / totalFees) * 100 : 100;
+    let statusBadge;
+    if (balance <= 0) { statusBadge = '<span class="status-badge status-paid">Paid in Full</span>'; }
+    else if (feesPaid > 0) { statusBadge = '<span class="status-badge status-partial">Partially Paid</span>'; }
+    else { statusBadge = '<span class="status-badge status-due">Payment Due</span>'; }
+    feesContainer.innerHTML = `<div class="flex justify-between items-center"><h4 class="font-semibold">Payment Status</h4>${statusBadge}</div><div class="mt-4"><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-green-500 h-2.5 rounded-full" style="width: ${percentagePaid}%"></div></div><div class="flex justify-between text-xs text-gray-500 mt-1"><span>Paid: ${formatCurrency(feesPaid)}</span><span>Total: ${formatCurrency(totalFees)}</span></div></div><div class="mt-6 border-t pt-4 space-y-3"><div class="flex justify-between text-sm"><span class="text-gray-500">Balance Due:</span><span class="font-bold text-lg ${balance <= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(balance > 0 ? balance : 0)}</span></div></div>`;
+}
+function renderTransactions(transactions) {
+    const transList = document.getElementById('transactionList');
+    if (!transactions || transactions.length === 0) {
+        transList.innerHTML = `<p class="text-center text-gray-500 py-8">You have no recent transactions.</p>`;
+        return;
+    }
+    transList.innerHTML = transactions.map(tx => {
+        const isCredit = tx.amount > 0 && tx.service_type === 'fee_payment';
+        const icon = isCredit ? 'arrow-down-circle' : 'arrow-up-circle';
+        const color = isCredit ? 'text-green-500' : 'text-red-500';
+        const sign = isCredit ? '+' : '-';
+        const description = tx.description || 'Transaction';
+        return `<div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"><div class="flex items-center gap-3"><i data-lucide="${icon}" class="w-5 h-5 ${color} flex-shrink-0"></i><div><p class="font-semibold text-sm">${description}</p><p class="text-xs text-gray-400">${new Date(tx.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p></div></div><div class="font-bold text-sm ${color}">${sign} ${formatCurrency(Math.abs(tx.amount))}</div></div>`;
+    }).join('');
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'student-signin.html';
+});
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Events & Media Productions - McDonalds Group</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?
+family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700;800&display=swap"
+rel="stylesheet">
+ <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+ <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+ <style>
+ :root {
+ --color-primary: #28a745;
+ --color-primary-dark: #218838;
+ --color-gold: #c5a66a;
+ --color-text-dark: #1f2937;
+ --color-text-light: #6b7280;
+ --color-bg: #ffffff;
+ --color-bg-alt: #f9fafb;
+ --font-heading: 'Playfair Display', serif;
+ --font-body: 'Montserrat', sans-serif;
+ }
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ html { scroll-behavior: smooth; }
+ body {
+ font-family: var(--font-body);
+ background-color: var(--color-bg);
+ color: var(--color-text-dark);
+ -webkit-font-smoothing: antialiased;
+ overflow-x: hidden;
+ }
+ .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+ /* --- HEADER --- */
+ header {
+ position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+ background-color: rgba(255, 255, 255, 0.9);
+ backdrop-filter: blur(10px);
+ border-bottom: 1px solid #e5e7eb;
+ }
+ .navbar { display: flex; justify-content: space-between; align-items: center; height: 80px; }
+ .logo { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--color-text￾dark); text-decoration: none; }
+ .logo span { color: var(--color-primary); }
+ .desktop-nav { display: none; }
+ .hamburger { display: block; cursor: pointer; border: none; background: none; }
+ @media (min-width: 1024px) {
+ .desktop-nav { display: flex; gap: 2.5rem; align-items: center; list-style: none; }
+ .hamburger { display: none; }
+ }
+ .desktop-nav a { text-decoration: none; color: var(--color-text-light); font-weight: 600; transition:
+color 0.3s ease; }
+ .desktop-nav a:hover { color: var(--color-primary); }
+ .mobile-menu { position: absolute; top: 80px; left: 0; right: 0; background-color: white; box￾shadow: 0 10px 20px rgba(0,0,0,0.05); max-height: 0; overflow: hidden; transition: max-height 0.5s
+ease-in-out; }
+ .mobile-menu.active { max-height: 500px; }
+ .mobile-menu ul { list-style: none; }
+ .mobile-menu li a { display: block; padding: 1.25rem 1.5rem; text-decoration: none; color: var(--
+color-text-dark); font-weight: 600; border-bottom: 1px solid #f3f4f6; }
+ /* --- HERO SECTION --- */
+ .hero {
+ position: relative; height: 90vh; display: flex; align-items: center; text-align: center;
+ color: white; background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071');
+ background-size: cover; background-position: center;
+ }
+ .hero-content { position: relative; z-index: 2; }
+ .hero h1 { font-family: var(--font-heading); font-size: clamp(3rem, 6vw, 5rem); font-weight: 800; }
+ .hero p { font-size: clamp(1rem, 2.5vw, 1.25rem); max-width: 700px; margin: 1.5rem auto 0;
+color: rgba(255,255,255,0.9); }
+ /* --- SERVICES SECTION --- */
+ .services-section { padding: 6rem 0; }
+ .section-heading { text-align: center; margin-bottom: 4rem; }
+ .section-heading h2 { font-family: var(--font-heading); font-size: clamp(2.5rem, 4vw, 3.5rem);
+color: var(--color-text-dark); }
+ .section-heading p { font-size: 1.125rem; color: var(--color-text-light); max-width: 700px; margin:
+0.5rem auto 0; }
+ 
+ .services-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+ gap: 2rem;
+ }
+ .service-card {
+ background-color: var(--color-bg-alt);
+ border: 1px solid #e5e7eb;
+ border-radius: 1rem;
+ padding: 2.5rem 2rem;
+ text-align: center;
+ transition: all 0.3s ease;
+ }
+ .service-card:hover {
+ transform: translateY(-10px);
+ box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+ border-color: var(--color-primary);
+ }
+ .service-icon {
+ margin: 0 auto 1.5rem auto;
+ width: 60px; height: 60px;
+ border-radius: 50%;
+ background: var(--color-primary);
+ color: white;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+ .service-card h3 { font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem; }
+ .service-card p { color: var(--color-text-light); }
+ .service-card a {
+ display: inline-block;
+ margin-top: 1.5rem;
+ color: var(--color-primary);
+ font-weight: 700;
+ text-decoration: none;
+ }
+ /* --- CTA FOOTER --- */
+ footer {
+ background: var(--color-primary);
+ color: white;
+ padding: 5rem 0;
+ text-align: center;
+ }
+ footer h2 { font-family: var(--font-heading); font-size: 2.5rem; }
+ footer p { max-width: 600px; margin: 1rem auto 2rem auto; color: rgba(255,255,255,0.8); }
+ footer a {
+ display: inline-block;
+ background: white;
+ color: var(--color-primary);
+ padding: 1rem 3rem;
+ border-radius: 50px;
+ font-weight: 700;
+ text-decoration: none;
+ transition: all 0.3s ease;
+ }
+ footer a:hover {
+ transform: scale(1.05);
+ box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+ }
+ </style>
+</head>
+<body>
+ <header>
+ <div class="container navbar">
+ <a href="#" class="logo">Events<span> & </span>Media</a>
+ <nav class="desktop-nav">
+ <!-- Dropdown for Events -->
+ <div class="dropdown">
+ <a href="#events">Events Services</a>
+ <!-- Dropdown content would go here -->
+ </div>
+ <!-- Dropdown for Media -->
+ <div class="dropdown">
+ <a href="#media">Media Services</a>
+ </div>
+ <!-- Dropdown for Productions -->
+ <div class="dropdown">
+ <a href="#productions">Productions</a>
+ </div>
+ </nav>
+ <button class="hamburger" id="hamburger-menu"><i data-lucide="menu"></i></button>
+ </div>
+ <div class="mobile-menu" id="mobile-nav">
+ <ul>
+ <li><a href="#events">Events Services</a></li>
+ <li><a href="#media">Media Services</a></li>
+ <li><a href="#productions">Productions</a></li>
+ </ul>
+ </div>
+ </header>
+ <main>
+ <section class="hero">
+ <div class="hero-content container">
+ <div data-aos="fade-up">
+ <h1>Crafting Experiences, Capturing Moments.</h1>
+ <p>Welcome to McDonalds Events & Media Productions, where your vision comes to life
+through our passion for creativity and excellence.</p>
+ </div>
+ </div>
+ </section>
+ <section id="services" class="services-section">
+ <div class="container">
+ <div class="section-heading" data-aos="fade-up">
+ <h2>Our Services</h2>
+ <p>We offer a comprehensive suite of creative services, meticulously managed by our
+team of dedicated professionals to ensure flawless execution every time.</p>
+ </div>
+ <!-- Events Planning Category -->
+ <div id="events" class="py-12">
+ <h2 class="section-heading" data-aos="fade-up">Events & Party Services</h2>
+ <div class="services-grid">
+ <div class="service-card" data-aos="fade-up"><div class="service-icon"><i data￾lucide="calendar-heart"></i></div><h3>Events Planning</h3><p>Corporate, social, and private
+events managed to perfection.</p><a href="#">Learn More &rarr;</a></div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="100"><div
+class="service-icon"><i data-lucide="camera"></i></div><h3>Photo & Video Coverage</h3>
+<p>Capturing your most important moments with cinematic quality.</p><a href="#">Learn More &rarr;
+</a></div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="200"><div
+class="service-icon"><i data-lucide="utensils-crossed"></i></div><h3>Catering</h3><p>Exquisite
+culinary experiences tailored to your event's theme and taste.</p><a href="#">Learn More &rarr;</a>
+</div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="300"><div
+class="service-icon"><i data-lucide="flower-2"></i></div><h3>Hall Decorations</h3>
+<p>Transforming venues into breathtaking environments.</p><a href="#">Learn More &rarr;</a>
+</div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="400"><div
+class="service-icon"><i data-lucide="sofa"></i></div><h3>Rentals</h3><p>Providing high-quality
+equipment and furniture for any occasion.</p><a href="#">Learn More &rarr;</a></div>
+ </div>
+ </div>
+ <!-- Media Productions Category -->
+ <div id="media" class="py-12">
+ <h2 class="section-heading" data-aos="fade-up">Media & Print Productions</h2>
+ <div class="services-grid">
+ <div class="service-card" data-aos="fade-up"><div class="service-icon"><i data￾lucide="image"></i></div><h3>Banners, Flyers, Programmes</h3><p>High-impact graphic design
+and professional printing services.</p><a href="#">Learn More &rarr;</a></div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="100"><div
+class="service-icon"><i data-lucide="gift"></i></div><h3>Souvenirs Productions</h3><p>Creating
+memorable, custom-branded gifts and souvenirs.</p><a href="#">Learn More &rarr;</a></div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="200"><div
+class="service-icon"><i data-lucide="megaphone"></i></div><h3>Adverts & Publicity</h3>
+<p>Crafting and executing publicity campaigns that get results.</p><a href="#">Learn More &rarr;
+</a></div>
+ </div>
+ </div>
+ 
+ <!-- Film & Music Productions Category -->
+ <div id="productions" class="py-12">
+ <h2 class="section-heading" data-aos="fade-up">Film & Music Productions</h2>
+ <div class="services-grid">
+ <div class="service-card" data-aos="fade-up"><div class="service-icon"><i data￾lucide="film"></i></div><h3>Film Making</h3><p>From concept to final cut, we produce compelling
+cinematic stories.</p><a href="#">Learn More &rarr;</a></div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="100"><div
+class="service-icon"><i data-lucide="music-4"></i></div><h3>Music Production</h3><p>State-of￾the-art recording, mixing, and mastering services for artists.</p><a href="#">Learn More &rarr;</a>
+</div>
+ <div class="service-card" data-aos="fade-up" data-aos-delay="200"><div
+class="service-icon"><i data-lucide="tv"></i></div><h3>TV Productions</h3><p>Developing and
+producing high-quality content for television broadcast.</p><a href="#">Learn More &rarr;</a></div>
+ </div>
+ </div>
+ </div>
+ </section>
+ 
+ </main>
+ <footer>
+ <div class="container" data-aos="fade-up">
+ <h2>Let's Create Something Extraordinary.</h2>
+ <p>Ready to bring your vision to life? Our team is standing by to collaborate with you on your
+next project. Contact us for a free consultation today.</p>
+ <a href="mailto:contact@mcdonaldsgroup.org">Get in Touch</a>
+ </div>
+ </footer>
+ <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+ <script>
+ AOS.init({ duration: 800, once: true, offset: 50 });
+ lucide.createIcons();
+ 
+ const hamburger = document.getElementById('hamburger-menu');
+ const mobileNav = document.getElementById('mobile-nav');
+ hamburger.addEventListener('click', () => {
+ const isExpanded = mobileNav.classList.toggle('active');
+ hamburger.innerHTML = isExpanded ? '<i data-lucide="x"></i>' : '<i data-lucide="menu"></i>';
+ lucide.createIcons();
+ });
+ </script>
+</body>
+</html>

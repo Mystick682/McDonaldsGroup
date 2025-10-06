@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .brand-panel { background-color: #28a745; background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center; }
+        .btn-primary { background-color: #28a745; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #218838; }
+        .input-field { background-color: #f9fafb; border-color: #d1d5db; transition: all 0.3s ease; }
+        .input-field:focus { border-color: #28a745; box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25); background-color: white; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl flex overflow-hidden">
+        <div class="hidden md:flex md:w-1/2 brand-panel p-12 text-white flex-col justify-center">
+            <h1 class="text-4xl font-bold mb-4">Join Our Community</h1>
+            <p class="text-gray-200 leading-relaxed">Create your account to access your academic records, results, and important school updates.</p>
+        </div>
+        <div class="w-full md:w-1/2 p-8 md:p-12">
+            <div class="text-center md:text-left mb-8"><h2 class="text-3xl font-bold text-gray-800">Student Registration</h2><p class="text-gray-500">Welcome! Please fill in your details.</p></div>
+            <form id="signupForm" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div><label for="firstName" class="block text-sm font-medium text-gray-600 mb-1">First Name</label><input type="text" id="firstName" required class="input-field w-full p-3 rounded-lg text-sm"></div>
+                <div><label for="lastName" class="block text-sm font-medium text-gray-600 mb-1">Last Name</label><input type="text" id="lastName" required class="input-field w-full p-3 rounded-lg text-sm"></div>
+                <div class="sm:col-span-2"><label for="studentClass" class="block text-sm font-medium text-gray-600 mb-1">Class</label><select id="studentClass" required class="input-field w-full p-3 rounded-lg text-sm bg-gray-50"><option value="">Select Your Current Class</option><option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option><option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option></select></div>
+                <div class="sm:col-span-2"><label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email Address</label><input type="email" id="email" required class="input-field w-full p-3 rounded-lg text-sm"></div>
+                <div class="sm:col-span-2">
+                    <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+                    <div class="relative"><input type="password" id="password" required class="input-field w-full p-3 rounded-lg text-sm pr-12"><div class="absolute inset-y-0 right-0 flex items-center"><button type="button" id="passwordToggleBtn" class="p-3 text-gray-400 hover:text-gray-600"><i data-lucide="eye" class="w-5 h-5"></i></button></div></div>
+                </div>
+                <div class="sm:col-span-2 mt-4"><button type="button" id="submitBtn" class="btn-primary w-full text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"><span>Create Account</span><div id="spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div></button></div>
+                <div class="sm:col-span-2 text-center text-sm"><p class="text-gray-500">Already have an account? <a href="student-signin.html" class="font-medium text-green-600 hover:text-green-500">Sign in here</a></p></div>
+            </form>
+        </div>
+    </div>
+
+<script>
+const SUPABASE_URL = 'https://lxjclssfgqalcpilheet.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amNsc3NmZ3FhbGNwaWxoZWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MDQwNTYsImV4cCI6MjA3MzM4MDA1Nn0.y-AY6DnfINAEl9jcNXoq32l7CyNEBp0o-Ne-Fniwais';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    document.getElementById('submitBtn').addEventListener('click', handleSignUp);
+    document.getElementById('passwordToggleBtn').addEventListener('click', togglePasswordVisibility);
+});
+
+async function handleSignUp(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    submitBtn.disabled = true;
+    spinner.classList.remove('hidden');
+
+    const formData = {
+        firstName: document.getElementById('firstName').value, lastName: document.getElementById('lastName').value,
+        studentClass: document.getElementById('studentClass').value, email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+    };
+    
+    try {
+        const { data, error } = await supabase.functions.invoke('create-student-account', {
+            body: formData,
+        });
+        if (error || data.error) throw error || new Error(data.error);
+        
+        await Swal.fire({
+            icon: 'success', title: 'Registration Submitted!',
+            text: 'Please check your email to confirm your account.',
+            confirmButtonColor: '#28a745'
+        });
+        window.location.href = 'student-signin.html';
+
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Registration Failed', text: error.message, confirmButtonColor: '#28a745' });
+    } finally {
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+    }
+}
+
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.querySelector('#passwordToggleBtn i');
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+    lucide.createIcons();
+}
+</script>
+</body>
+</html>
